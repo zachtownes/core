@@ -1392,7 +1392,6 @@ build.json @home-assistant/supervisor
 /homeassistant/components/tami4/ @Guy293
 /tests/components/tami4/ @Guy293
 /homeassistant/components/tandoor/ @zachtownes
-/tests/components/tandoor/ @zachtownes
 /homeassistant/components/tankerkoenig/ @guillempages @mib1185 @jpbede
 /tests/components/tankerkoenig/ @guillempages @mib1185 @jpbede
 /homeassistant/components/tapsaff/ @bazwilliams

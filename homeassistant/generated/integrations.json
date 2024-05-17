@@ -5965,6 +5965,12 @@
       "config_flow": true,
       "iot_class": "cloud_polling"
     },
+    "tandoor": {
+      "name": "Tandoor Meal Plan Integration",
+      "integration_type": "hub",
+      "config_flow": false,
+      "iot_class": "local_polling"
+    },
     "tank_utility": {
       "name": "Tank Utility",
       "integration_type": "hub",

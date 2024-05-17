@@ -537,7 +537,6 @@ FLOWS = {
         "tailscale",
         "tailwind",
         "tami4",
-        "tandoor",
         "tankerkoenig",
         "tasmota",
         "tautulli",

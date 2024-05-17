@@ -1,9 +1,12 @@
-import datetime  # noqa: D100
+"""Interact with Tandoor Meal Plan."""
+
+import datetime
 import logging
+from zoneinfo import ZoneInfo
 
-import aiohttp
+import requests
 
-LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 class Tandoor:
@@ -28,57 +31,74 @@ class Tandoor:
     def api_key(self):  # noqa: D102
         return self._api_key
 
-    async def tandoor_test(self, url, api_key):
+    def tandoor_test(url, api_key):  # noqa: N805
         """Test Tandoor webui."""
-        LOGGER.debug("Tandoor test started")
-        async with aiohttp.ClientSession() as session:  # noqa: SIM117
-            async with session.get(
-                f"{url}/api/",
-                headers={"Authorization": f"Bearer {api_key}"},
-                timeout=10,
-            ) as response:
-                if response.status == 200:
-                    LOGGER.debug("Tandoor test passed")
-                    return True
-                else:  # noqa: RET505
-                    LOGGER.debug("Tandoor test failed")
-                    return False
+        _LOGGER.debug("Tandoor test started")
+        response = requests.get(
+            f"{url}/api/", headers={"Authorization": f"Bearer {api_key}"}, timeout=10
+        )
+        response.raise_for_status()
+        return response.json()
 
-    async def get_today_meal_plan(self, url, api_key):
+    def get_today_meal_plan(url, api_key, time_zone):  # noqa: N805
         """Get today's meal plan."""
-        LOGGER.debug("Getting today's meal plan")
-        today = datetime.date.today().strftime("%Y-%m-%d")
-        async with aiohttp.ClientSession() as session:  # noqa: SIM117
-            async with session.get(
-                f"{url}/api/meal-plan/?from_date={today}&to_date={today}",
-                headers={"Authorization": f"Bearer {api_key}"},
-                timeout=10,
-            ) as response:
-                if response.status == 200:
-                    self._meal_plan = await response.json()
-                    if self._meal_plan:
-                        meal_plan = self._meal_plan[
-                            0
-                        ]  # assuming you're interested in the first meal plan
-                        if meal_plan.get("recipe"):
-                            self._recipe_name = meal_plan.get("recipe", {}).get("name")
-                            self._recipe_id = meal_plan.get("recipe", {}).get("id")
-                            self._recipe_image = meal_plan.get("recipe", {}).get(
-                                "image"
-                            )
-                            self._servings = meal_plan.get("servings")
-                            self._note = meal_plan.get("note")
-                            self._recipe_url = f"{url}/view/recipe/{self._recipe_id}?servings={self._servings}"
-                        elif self._meal_plan:
-                            meal_plan = self._meal_plan[
-                                0
-                            ]  # assuming you're interested in the first meal plan
-                            self._recipe_name = meal_plan.get("title")
-                            self._servings = meal_plan.get("servings")
-                            self._note = meal_plan.get("note")
-                            self._recipe_id = None
-                            self._recipe_image = None
-                            self._recipe_url = "https://recipes.mysticturtles.com/plan/"
-                        return self
-                else:
-                    return None
+        _LOGGER.debug("Getting today's meal plan")
+        my_date = datetime.datetime.now(ZoneInfo(time_zone))
+        today = my_date.strftime("%Y-%m-%d")
+        _LOGGER.debug(today)
+        response = requests.get(
+            f"{url}/api/meal-plan/?from_date={today}&to_date={today}",
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=10,
+        )
+        response.raise_for_status()
+        meal_plan = response.json()
+        if meal_plan:
+            meal = meal_plan[0]  # assuming you're interested in the first meal plan
+            if meal.get("recipe"):
+                recipe_name = meal.get("recipe", {}).get("name")
+                recipe_id = meal.get("recipe", {}).get("id")
+                recipe_image = meal.get("recipe", {}).get("image")
+                servings = meal.get("servings")
+                note = meal.get("note")
+                recipe_url = f"{url}/view/recipe/{recipe_id}?servings={servings}"
+                recipeObject = {
+                    "recipe_name": recipe_name,
+                    "recipe_id": recipe_id,
+                    "recipe_image": recipe_image,
+                    "servings": servings,
+                    "note": note,
+                    "recipe_url": recipe_url,
+                }
+            else:
+                recipe_name = meal.get("title")
+                servings = meal.get("servings")
+                note = meal.get("note")
+                recipe_id = None
+                recipe_image = None
+                recipe_url = "https://recipes.mysticturtles.com/plan/"
+
+                recipeObject = {
+                    "recipe_name": recipe_name,
+                    "servings": servings,
+                    "note": note,
+                    "recipe_id": recipe_id,
+                    "recipe_image": recipe_image,
+                    "recipe_url": recipe_url,
+                }
+        else:
+            recipe_name = "No meal plan"
+            servings = None
+            note = None
+            recipe_id = None
+            recipe_image = None
+            recipe_url = None
+            recipeObject = {
+                "recipe_name": recipe_name,
+                "servings": servings,
+                "note": note,
+                "recipe_id": recipe_id,
+                "recipe_image": recipe_image,
+                "recipe_url": recipe_url,
+            }
+        return recipeObject

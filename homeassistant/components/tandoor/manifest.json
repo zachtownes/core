@@ -2,15 +2,8 @@
   "domain": "tandoor",
   "name": "Tandoor Meal Plan Integration",
   "codeowners": ["@zachtownes"],
-  "config_flow": true,
-  "dependencies": [],
   "documentation": "https://www.home-assistant.io/integrations/tandoor",
-  "homekit": {},
-  "integration_type": "entity",
   "iot_class": "local_polling",
   "loggers": ["tandoor"],
-  "requirements": [],
-  "single_config_entry": true,
-  "ssdp": [],
-  "zeroconf": []
+  "requirements": []
 }
